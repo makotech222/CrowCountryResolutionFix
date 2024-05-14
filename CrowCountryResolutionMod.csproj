@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>CrowCountryResolutionMod</AssemblyName>
     <Description>My first plugin</Description>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <PluginDir>E:\Games\Crow Country\BepInEx\plugins</PluginDir>
