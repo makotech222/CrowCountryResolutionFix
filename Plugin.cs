@@ -41,7 +41,7 @@ namespace CrowCountryResolutionMod
         [HarmonyPostfix]
         private static void FovPostfix(CharacterAndCamera __instance)
         {
-            if (Plugin._fov.Value != 0)
+            if (Plugin._fov.Value != 10.1f)
             {
                 var mainCamera = Camera.main;
                 mainCamera.fieldOfView = Plugin._fov.Value;
