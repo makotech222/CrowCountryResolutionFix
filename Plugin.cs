@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using Code.com.sfbgames.crowcountry;
+using com.sfbgames.crowcountry;
 using com.sfbgames.playmaker;
 using HarmonyLib;
 using UnityEngine;
@@ -14,12 +15,22 @@ namespace CrowCountryResolutionMod
         public static ConfigEntry<int> _width;
         public static ConfigEntry<int> _height;
         public static ConfigEntry<float> _fov;
+        public static ConfigEntry<bool> _enableSFBFilter;
+        public static ConfigEntry<bool> _enablePSXFilter;
+        public static ConfigEntry<bool> _enableCRTBlurFilter;
+        public static ConfigEntry<bool> _enableCRTPostFilter;
+        public static ConfigEntry<bool> _disableAllFilters;
         public static ManualLogSource _logger;
         private void Awake()
         {
-            _width = Config.Bind<int>("Resolution", "Width", 1920, "");
-            _height = Config.Bind<int>("Resolution", "Height", 1080, "");
-            _fov = Config.Bind<float>("Resolution", "Fov", 10.1f, "Amount to set to Fov. For ultrawide, try around 15-20");
+            _width = Config.Bind<int>("1. Resolution", "Width", 1920, "");
+            _height = Config.Bind<int>("1. Resolution", "Height", 1080, "");
+            _fov = Config.Bind<float>("1. Resolution", "Fov", 10.1f, "Amount to set to Fov. For ultrawide, try around 15-20");
+            _enableSFBFilter = Config.Bind<bool>("2. Filters", "Enable SFB Filter", true, "");
+            _enablePSXFilter = Config.Bind<bool>("2. Filters", "Enable PSX Filter", true, "");
+            _enableCRTBlurFilter = Config.Bind<bool>("2. Filters", "Enable CRT Blur Filter", true, "");
+            _enableCRTPostFilter = Config.Bind<bool>("2. Filters", "Enable CRT Post Filter", true, "");
+            _disableAllFilters = Config.Bind<bool>("2. Filters", "Disable All Filters", false, "Completely disables the Cam Effect (beyond 4 filters above). Overrides previously set filters");
             _logger = Logger;
             // Plugin startup logic
             Harmony.CreateAndPatchAll(typeof(CrowCountryPatch));
@@ -53,6 +64,25 @@ namespace CrowCountryResolutionMod
                     gameObject.gameObject.SetActive(false);
                 }
             }
+        }
+
+        [HarmonyPatch(typeof(CrowCountryCamEffect), "Awake")]
+        [HarmonyPrefix]
+        private static bool FilterAwakePrefix(CrowCountryCamEffect __instance)
+        {
+            Plugin._logger.LogInfo("Setting Filters");
+            __instance.enableCRTBlurFilter = Plugin._enableCRTBlurFilter.Value;
+            __instance.enableCRTPostFilter = Plugin._enableCRTPostFilter.Value;
+            __instance.enablePSXFilter = Plugin._enablePSXFilter.Value;
+            __instance.enableSFBFilter = Plugin._enableSFBFilter.Value;
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CrowCountryCamEffect), "Awake")]
+        [HarmonyPostfix]
+        private static void FilterPostfix(CrowCountryCamEffect __instance)
+        {
+            __instance.enabled = !Plugin._disableAllFilters.Value;
         }
     }
 }
