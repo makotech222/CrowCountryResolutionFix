@@ -5,6 +5,7 @@ Features:
 - Set Custom Resolution
 - Set Custom FOV
 - Disable Post Processing Filters (CRT/PSX Filters)
+- Internal Resolution Multiplier (max x12)
 
 Requirements:
 - BepinEx 5.4.23.1 (https://github.com/BepInEx/BepInEx)
