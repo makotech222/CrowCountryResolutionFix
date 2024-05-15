@@ -19,6 +19,7 @@ namespace CrowCountryResolutionMod
         public static ConfigEntry<bool> _enablePSXFilter;
         public static ConfigEntry<bool> _enableCRTBlurFilter;
         public static ConfigEntry<bool> _enableCRTPostFilter;
+        public static ConfigEntry<int> _internalResMultiplier;
         public static ConfigEntry<bool> _disableAllFilters;
         public static ManualLogSource _logger;
         private void Awake()
@@ -30,6 +31,7 @@ namespace CrowCountryResolutionMod
             _enablePSXFilter = Config.Bind<bool>("2. Filters", "Enable PSX Filter", true, "");
             _enableCRTBlurFilter = Config.Bind<bool>("2. Filters", "Enable CRT Blur Filter", true, "");
             _enableCRTPostFilter = Config.Bind<bool>("2. Filters", "Enable CRT Post Filter", true, "");
+            _internalResMultiplier = Config.Bind<int>("2. Filters", "Internal Resolution Multiplier", 1, "Modifies the psx effect to use higher resolution buffer. 12 seems to be the max.");
             _disableAllFilters = Config.Bind<bool>("2. Filters", "Disable All Filters", false, "Completely disables the Cam Effect (beyond 4 filters above). Overrides previously set filters");
             _logger = Logger;
             // Plugin startup logic
@@ -80,9 +82,18 @@ namespace CrowCountryResolutionMod
 
         [HarmonyPatch(typeof(CrowCountryCamEffect), "Awake")]
         [HarmonyPostfix]
-        private static void FilterPostfix(CrowCountryCamEffect __instance)
+        private static void FilterPostfix(CrowCountryCamEffect __instance, ref RenderTexture ___psxRenderTexture, ref RenderTexture ___fbBuffer, ref RenderTexture ___camRenderTexture1)
         {
             __instance.enabled = !Plugin._disableAllFilters.Value;
+
+            var multiplier = Plugin._internalResMultiplier.Value;
+            ___psxRenderTexture = new RenderTexture(550 * multiplier, 400 * multiplier, 16, RenderTextureFormat.ARGB32);
+            ___psxRenderTexture.filterMode = FilterMode.Point;
+
+            ___fbBuffer = new RenderTexture(416* multiplier, 234* multiplier, 0);
+            ___fbBuffer.filterMode = FilterMode.Point;
+
+            ___camRenderTexture1 = new RenderTexture(1248* multiplier, 702* multiplier, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
         }
     }
 }
